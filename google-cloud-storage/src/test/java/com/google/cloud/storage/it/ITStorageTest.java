@@ -55,11 +55,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.common.io.BaseEncoding;
 import com.google.common.io.ByteStreams;
-
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -82,8 +77,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
-
 import javax.crypto.spec.SecretKeySpec;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 public class ITStorageTest {
 
@@ -101,6 +98,12 @@ public class ITStorageTest {
       new SecretKeySpec(BaseEncoding.base64().decode(BASE64_KEY), "AES256");
   private static final byte[] COMPRESSED_CONTENT = BaseEncoding.base64()
       .decode("H4sIAAAAAAAAAPNIzcnJV3DPz0/PSVVwzskvTVEILskvSkxPVQQA/LySchsAAAA=");
+  private static final String BLOB_NAME_FORM_C = "Caf\u00e9";
+  private static final String BLOB_NAME_FORM_D = "Cafe\u0301";
+  private static final String BLOB_CONTENT_FORM_C = "BLOB_CONTENT_FORM_C";
+  private static final String BLOB_CONTENT_FORM_D = "BLOB_CONTENT_FORM_D";
+  private static final Map<String, String> BLOB_NORMALIZATION =
+      ImmutableMap.of(BLOB_NAME_FORM_C, BLOB_CONTENT_FORM_C, BLOB_NAME_FORM_D, BLOB_CONTENT_FORM_D);
 
   @BeforeClass
   public static void beforeClass() throws NoSuchAlgorithmException, InvalidKeySpecException {
@@ -1439,5 +1442,20 @@ public class ITStorageTest {
       }
     }
     blob.delete();
+  }
+
+  @Test
+  public void testBlobNameNormalization() {
+    for (String blobName : BLOB_NORMALIZATION.keySet()) {
+      BlobInfo blobInfoFormC = BlobInfo.newBuilder(BlobId.of(BUCKET, blobName))
+          .setContentType("text/plain")
+          .setContentEncoding("UTF-8")
+          .build();
+      Blob blob = storage.create(blobInfoFormC, BLOB_NORMALIZATION.get(blobName).getBytes());
+      assertEquals(blobName, blob.getName());
+
+      String content = new String(storage.get(BlobId.of(BUCKET, blobName)).getContent());
+      assertEquals(BLOB_NORMALIZATION.get(blobName), content);
+    }
   }
 }
