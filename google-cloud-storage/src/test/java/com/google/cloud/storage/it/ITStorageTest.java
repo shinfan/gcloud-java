@@ -1447,11 +1447,11 @@ public class ITStorageTest {
   @Test
   public void testBlobNameNormalization() {
     for (String blobName : BLOB_NORMALIZATION.keySet()) {
-      BlobInfo blobInfoFormC = BlobInfo.newBuilder(BlobId.of(BUCKET, blobName))
+      BlobInfo blobInfo = BlobInfo.newBuilder(BlobId.of(BUCKET, blobName))
           .setContentType("text/plain")
           .setContentEncoding("UTF-8")
           .build();
-      Blob blob = storage.create(blobInfoFormC, BLOB_NORMALIZATION.get(blobName).getBytes());
+      Blob blob = storage.create(blobInfo, BLOB_NORMALIZATION.get(blobName).getBytes());
       assertEquals(blobName, blob.getName());
 
       String content = new String(storage.get(BlobId.of(BUCKET, blobName)).getContent());
