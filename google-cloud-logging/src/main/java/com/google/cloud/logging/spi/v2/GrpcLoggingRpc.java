@@ -26,8 +26,8 @@ import com.google.api.gax.grpc.FixedChannelProvider;
 import com.google.api.gax.grpc.FixedExecutorProvider;
 import com.google.api.gax.grpc.ProviderManager;
 import com.google.api.gax.grpc.UnaryCallSettings;
-import com.google.cloud.GrpcTransportOptions;
-import com.google.cloud.GrpcTransportOptions.ExecutorFactory;
+import com.google.cloud.grpc.GrpcTransportOptions;
+import com.google.cloud.grpc.GrpcTransportOptions.ExecutorFactory;
 import com.google.cloud.NoCredentials;
 import com.google.cloud.logging.LoggingException;
 import com.google.cloud.logging.LoggingOptions;
@@ -54,9 +54,8 @@ import com.google.logging.v2.WriteLogEntriesRequest;
 import com.google.logging.v2.WriteLogEntriesResponse;
 import com.google.protobuf.Empty;
 import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
 import io.grpc.Status.Code;
-import io.grpc.netty.NegotiationType;
-import io.grpc.netty.NettyChannelBuilder;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -83,9 +82,9 @@ public class GrpcLoggingRpc implements LoggingRpc {
       ChannelProvider channelProvider;
       // todo(mziccard): ChannelProvider should support null/absent credentials for testing
       if (options.getHost().contains("localhost")
-          || options.getCredentials().equals(NoCredentials.getInstance())) {
-        ManagedChannel managedChannel = NettyChannelBuilder.forTarget(options.getHost())
-            .negotiationType(NegotiationType.PLAINTEXT)
+          || NoCredentials.getInstance().equals(options.getCredentials())) {
+        ManagedChannel managedChannel = ManagedChannelBuilder.forTarget(options.getHost())
+            .usePlaintext(true)
             .executor(executor)
             .build();
         channelProvider = FixedChannelProvider.create(managedChannel);
@@ -139,7 +138,7 @@ public class GrpcLoggingRpc implements LoggingRpc {
             if (returnNullOnSet.contains(exception.getStatusCode())) {
               return null;
             }
-            throw new LoggingException(exception, idempotent);
+            throw new LoggingException(exception);
           }
         });
   }

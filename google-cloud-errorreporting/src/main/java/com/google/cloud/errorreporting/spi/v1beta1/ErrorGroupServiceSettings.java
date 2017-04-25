@@ -17,7 +17,7 @@ package com.google.cloud.errorreporting.spi.v1beta1;
 
 import com.google.api.gax.core.GoogleCredentialsProvider;
 import com.google.api.gax.core.PropertiesProvider;
-import com.google.api.gax.core.RetrySettings;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ClientSettings;
 import com.google.api.gax.grpc.ExecutorProvider;
@@ -31,14 +31,14 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.devtools.clouderrorreporting.v1beta1.ErrorGroup;
-import com.google.devtools.clouderrorreporting.v1beta1.ErrorGroupServiceGrpc;
 import com.google.devtools.clouderrorreporting.v1beta1.GetGroupRequest;
 import com.google.devtools.clouderrorreporting.v1beta1.UpdateGroupRequest;
 import com.google.protobuf.ExperimentalApi;
 import io.grpc.Status;
 import java.io.IOException;
+import java.util.List;
 import javax.annotation.Generated;
-import org.joda.time.Duration;
+import org.threeten.bp.Duration;
 
 // AUTO-GENERATED DOCUMENTATION AND CLASS
 /**
@@ -62,7 +62,7 @@ import org.joda.time.Duration;
  * ErrorGroupServiceSettings.Builder errorGroupServiceSettingsBuilder =
  *     ErrorGroupServiceSettings.defaultBuilder();
  * errorGroupServiceSettingsBuilder.getGroupSettings().getRetrySettingsBuilder()
- *     .setTotalTimeout(Duration.standardSeconds(30));
+ *     .setTotalTimeout(Duration.ofSeconds(30));
  * ErrorGroupServiceSettings errorGroupServiceSettings = errorGroupServiceSettingsBuilder.build();
  * </code>
  * </pre>
@@ -82,6 +82,20 @@ public class ErrorGroupServiceSettings extends ClientSettings {
   private static final String META_VERSION_KEY = "artifact.version";
 
   private static String gapicVersion;
+
+  private static final io.grpc.MethodDescriptor<GetGroupRequest, ErrorGroup> METHOD_GET_GROUP =
+      io.grpc.MethodDescriptor.create(
+          io.grpc.MethodDescriptor.MethodType.UNARY,
+          "google.devtools.clouderrorreporting.v1beta1.ErrorGroupService/GetGroup",
+          io.grpc.protobuf.ProtoUtils.marshaller(GetGroupRequest.getDefaultInstance()),
+          io.grpc.protobuf.ProtoUtils.marshaller(ErrorGroup.getDefaultInstance()));
+  private static final io.grpc.MethodDescriptor<UpdateGroupRequest, ErrorGroup>
+      METHOD_UPDATE_GROUP =
+          io.grpc.MethodDescriptor.create(
+              io.grpc.MethodDescriptor.MethodType.UNARY,
+              "google.devtools.clouderrorreporting.v1beta1.ErrorGroupService/UpdateGroup",
+              io.grpc.protobuf.ProtoUtils.marshaller(UpdateGroupRequest.getDefaultInstance()),
+              io.grpc.protobuf.ProtoUtils.marshaller(ErrorGroup.getDefaultInstance()));
 
   private final SimpleCallSettings<GetGroupRequest, ErrorGroup> getGroupSettings;
   private final SimpleCallSettings<UpdateGroupRequest, ErrorGroup> updateGroupSettings;
@@ -107,7 +121,7 @@ public class ErrorGroupServiceSettings extends ClientSettings {
   }
 
   /** Returns the default service scopes. */
-  public static ImmutableList<String> getDefaultServiceScopes() {
+  public static List<String> getDefaultServiceScopes() {
     return DEFAULT_SERVICE_SCOPES;
   }
 
@@ -185,13 +199,13 @@ public class ErrorGroupServiceSettings extends ClientSettings {
       RetrySettings.Builder settingsBuilder = null;
       settingsBuilder =
           RetrySettings.newBuilder()
-              .setInitialRetryDelay(Duration.millis(100L))
+              .setInitialRetryDelay(Duration.ofMillis(100L))
               .setRetryDelayMultiplier(1.3)
-              .setMaxRetryDelay(Duration.millis(60000L))
-              .setInitialRpcTimeout(Duration.millis(20000L))
+              .setMaxRetryDelay(Duration.ofMillis(60000L))
+              .setInitialRpcTimeout(Duration.ofMillis(20000L))
               .setRpcTimeoutMultiplier(1.0)
-              .setMaxRpcTimeout(Duration.millis(20000L))
-              .setTotalTimeout(Duration.millis(600000L));
+              .setMaxRpcTimeout(Duration.ofMillis(20000L))
+              .setTotalTimeout(Duration.ofMillis(600000L));
       definitions.put("default", settingsBuilder);
       RETRY_PARAM_DEFINITIONS = definitions.build();
     }
@@ -199,10 +213,9 @@ public class ErrorGroupServiceSettings extends ClientSettings {
     private Builder() {
       super(defaultChannelProviderBuilder().build());
 
-      getGroupSettings = SimpleCallSettings.newBuilder(ErrorGroupServiceGrpc.METHOD_GET_GROUP);
+      getGroupSettings = SimpleCallSettings.newBuilder(METHOD_GET_GROUP);
 
-      updateGroupSettings =
-          SimpleCallSettings.newBuilder(ErrorGroupServiceGrpc.METHOD_UPDATE_GROUP);
+      updateGroupSettings = SimpleCallSettings.newBuilder(METHOD_UPDATE_GROUP);
 
       unaryMethodSettingsBuilders =
           ImmutableList.<UnaryCallSettings.Builder>of(getGroupSettings, updateGroupSettings);

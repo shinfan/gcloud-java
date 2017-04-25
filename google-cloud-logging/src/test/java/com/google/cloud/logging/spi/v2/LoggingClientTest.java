@@ -20,8 +20,8 @@ import static com.google.cloud.logging.spi.v2.PagedResponseWrappers.ListLogsPage
 
 import com.google.api.MonitoredResource;
 import com.google.api.gax.grpc.ApiException;
-import com.google.api.gax.testing.MockGrpcService;
-import com.google.api.gax.testing.MockServiceHelper;
+import com.google.api.gax.grpc.testing.MockGrpcService;
+import com.google.api.gax.grpc.testing.MockServiceHelper;
 import com.google.common.collect.Lists;
 import com.google.logging.v2.DeleteLogRequest;
 import com.google.logging.v2.ListLogEntriesRequest;
@@ -147,7 +147,7 @@ public class LoggingClientTest {
 
     Assert.assertEquals(logName, actualRequest.getLogNameAsLogNameOneof());
     Assert.assertEquals(resource, actualRequest.getResource());
-    Assert.assertEquals(labels, actualRequest.getLabels());
+    Assert.assertEquals(labels, actualRequest.getLabelsMap());
     Assert.assertEquals(entries, actualRequest.getEntriesList());
   }
 

@@ -20,7 +20,7 @@ import static com.google.cloud.logging.spi.v2.PagedResponseWrappers.ListSinksPag
 import com.google.api.core.ApiFuture;
 import com.google.api.gax.core.GoogleCredentialsProvider;
 import com.google.api.gax.core.PropertiesProvider;
-import com.google.api.gax.core.RetrySettings;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.grpc.CallContext;
 import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ClientSettings;
@@ -39,7 +39,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.logging.v2.ConfigServiceV2Grpc;
 import com.google.logging.v2.CreateSinkRequest;
 import com.google.logging.v2.DeleteSinkRequest;
 import com.google.logging.v2.GetSinkRequest;
@@ -51,8 +50,9 @@ import com.google.protobuf.Empty;
 import com.google.protobuf.ExperimentalApi;
 import io.grpc.Status;
 import java.io.IOException;
+import java.util.List;
 import javax.annotation.Generated;
-import org.joda.time.Duration;
+import org.threeten.bp.Duration;
 
 // AUTO-GENERATED DOCUMENTATION AND CLASS
 /**
@@ -75,7 +75,7 @@ import org.joda.time.Duration;
  * ConfigSettings.Builder configSettingsBuilder =
  *     ConfigSettings.defaultBuilder();
  * configSettingsBuilder.getSinkSettings().getRetrySettingsBuilder()
- *     .setTotalTimeout(Duration.standardSeconds(30));
+ *     .setTotalTimeout(Duration.ofSeconds(30));
  * ConfigSettings configSettings = configSettingsBuilder.build();
  * </code>
  * </pre>
@@ -100,6 +100,38 @@ public class ConfigSettings extends ClientSettings {
   private static final String META_VERSION_KEY = "artifact.version";
 
   private static String gapicVersion;
+
+  private static final io.grpc.MethodDescriptor<ListSinksRequest, ListSinksResponse>
+      METHOD_LIST_SINKS =
+          io.grpc.MethodDescriptor.create(
+              io.grpc.MethodDescriptor.MethodType.UNARY,
+              "google.logging.v2.ConfigServiceV2/ListSinks",
+              io.grpc.protobuf.ProtoUtils.marshaller(ListSinksRequest.getDefaultInstance()),
+              io.grpc.protobuf.ProtoUtils.marshaller(ListSinksResponse.getDefaultInstance()));
+  private static final io.grpc.MethodDescriptor<GetSinkRequest, LogSink> METHOD_GET_SINK =
+      io.grpc.MethodDescriptor.create(
+          io.grpc.MethodDescriptor.MethodType.UNARY,
+          "google.logging.v2.ConfigServiceV2/GetSink",
+          io.grpc.protobuf.ProtoUtils.marshaller(GetSinkRequest.getDefaultInstance()),
+          io.grpc.protobuf.ProtoUtils.marshaller(LogSink.getDefaultInstance()));
+  private static final io.grpc.MethodDescriptor<CreateSinkRequest, LogSink> METHOD_CREATE_SINK =
+      io.grpc.MethodDescriptor.create(
+          io.grpc.MethodDescriptor.MethodType.UNARY,
+          "google.logging.v2.ConfigServiceV2/CreateSink",
+          io.grpc.protobuf.ProtoUtils.marshaller(CreateSinkRequest.getDefaultInstance()),
+          io.grpc.protobuf.ProtoUtils.marshaller(LogSink.getDefaultInstance()));
+  private static final io.grpc.MethodDescriptor<UpdateSinkRequest, LogSink> METHOD_UPDATE_SINK =
+      io.grpc.MethodDescriptor.create(
+          io.grpc.MethodDescriptor.MethodType.UNARY,
+          "google.logging.v2.ConfigServiceV2/UpdateSink",
+          io.grpc.protobuf.ProtoUtils.marshaller(UpdateSinkRequest.getDefaultInstance()),
+          io.grpc.protobuf.ProtoUtils.marshaller(LogSink.getDefaultInstance()));
+  private static final io.grpc.MethodDescriptor<DeleteSinkRequest, Empty> METHOD_DELETE_SINK =
+      io.grpc.MethodDescriptor.create(
+          io.grpc.MethodDescriptor.MethodType.UNARY,
+          "google.logging.v2.ConfigServiceV2/DeleteSink",
+          io.grpc.protobuf.ProtoUtils.marshaller(DeleteSinkRequest.getDefaultInstance()),
+          io.grpc.protobuf.ProtoUtils.marshaller(Empty.getDefaultInstance()));
 
   private final PagedCallSettings<ListSinksRequest, ListSinksResponse, ListSinksPagedResponse>
       listSinksSettings;
@@ -145,7 +177,7 @@ public class ConfigSettings extends ClientSettings {
   }
 
   /** Returns the default service scopes. */
-  public static ImmutableList<String> getDefaultServiceScopes() {
+  public static List<String> getDefaultServiceScopes() {
     return DEFAULT_SERVICE_SCOPES;
   }
 
@@ -281,13 +313,13 @@ public class ConfigSettings extends ClientSettings {
       RetrySettings.Builder settingsBuilder = null;
       settingsBuilder =
           RetrySettings.newBuilder()
-              .setInitialRetryDelay(Duration.millis(100L))
+              .setInitialRetryDelay(Duration.ofMillis(100L))
               .setRetryDelayMultiplier(1.2)
-              .setMaxRetryDelay(Duration.millis(1000L))
-              .setInitialRpcTimeout(Duration.millis(2000L))
+              .setMaxRetryDelay(Duration.ofMillis(1000L))
+              .setInitialRpcTimeout(Duration.ofMillis(2000L))
               .setRpcTimeoutMultiplier(1.5)
-              .setMaxRpcTimeout(Duration.millis(30000L))
-              .setTotalTimeout(Duration.millis(45000L));
+              .setMaxRpcTimeout(Duration.ofMillis(30000L))
+              .setTotalTimeout(Duration.ofMillis(45000L));
       definitions.put("default", settingsBuilder);
       RETRY_PARAM_DEFINITIONS = definitions.build();
     }
@@ -295,17 +327,15 @@ public class ConfigSettings extends ClientSettings {
     private Builder() {
       super(defaultChannelProviderBuilder().build());
 
-      listSinksSettings =
-          PagedCallSettings.newBuilder(
-              ConfigServiceV2Grpc.METHOD_LIST_SINKS, LIST_SINKS_PAGE_STR_FACT);
+      listSinksSettings = PagedCallSettings.newBuilder(METHOD_LIST_SINKS, LIST_SINKS_PAGE_STR_FACT);
 
-      getSinkSettings = SimpleCallSettings.newBuilder(ConfigServiceV2Grpc.METHOD_GET_SINK);
+      getSinkSettings = SimpleCallSettings.newBuilder(METHOD_GET_SINK);
 
-      createSinkSettings = SimpleCallSettings.newBuilder(ConfigServiceV2Grpc.METHOD_CREATE_SINK);
+      createSinkSettings = SimpleCallSettings.newBuilder(METHOD_CREATE_SINK);
 
-      updateSinkSettings = SimpleCallSettings.newBuilder(ConfigServiceV2Grpc.METHOD_UPDATE_SINK);
+      updateSinkSettings = SimpleCallSettings.newBuilder(METHOD_UPDATE_SINK);
 
-      deleteSinkSettings = SimpleCallSettings.newBuilder(ConfigServiceV2Grpc.METHOD_DELETE_SINK);
+      deleteSinkSettings = SimpleCallSettings.newBuilder(METHOD_DELETE_SINK);
 
       unaryMethodSettingsBuilders =
           ImmutableList.<UnaryCallSettings.Builder>of(

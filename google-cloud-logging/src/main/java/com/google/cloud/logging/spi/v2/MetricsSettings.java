@@ -20,7 +20,7 @@ import static com.google.cloud.logging.spi.v2.PagedResponseWrappers.ListLogMetri
 import com.google.api.core.ApiFuture;
 import com.google.api.gax.core.GoogleCredentialsProvider;
 import com.google.api.gax.core.PropertiesProvider;
-import com.google.api.gax.core.RetrySettings;
+import com.google.api.gax.retrying.RetrySettings;
 import com.google.api.gax.grpc.CallContext;
 import com.google.api.gax.grpc.ChannelProvider;
 import com.google.api.gax.grpc.ClientSettings;
@@ -45,14 +45,14 @@ import com.google.logging.v2.GetLogMetricRequest;
 import com.google.logging.v2.ListLogMetricsRequest;
 import com.google.logging.v2.ListLogMetricsResponse;
 import com.google.logging.v2.LogMetric;
-import com.google.logging.v2.MetricsServiceV2Grpc;
 import com.google.logging.v2.UpdateLogMetricRequest;
 import com.google.protobuf.Empty;
 import com.google.protobuf.ExperimentalApi;
 import io.grpc.Status;
 import java.io.IOException;
+import java.util.List;
 import javax.annotation.Generated;
-import org.joda.time.Duration;
+import org.threeten.bp.Duration;
 
 // AUTO-GENERATED DOCUMENTATION AND CLASS
 /**
@@ -75,7 +75,7 @@ import org.joda.time.Duration;
  * MetricsSettings.Builder metricsSettingsBuilder =
  *     MetricsSettings.defaultBuilder();
  * metricsSettingsBuilder.getLogMetricSettings().getRetrySettingsBuilder()
- *     .setTotalTimeout(Duration.standardSeconds(30));
+ *     .setTotalTimeout(Duration.ofSeconds(30));
  * MetricsSettings metricsSettings = metricsSettingsBuilder.build();
  * </code>
  * </pre>
@@ -100,6 +100,42 @@ public class MetricsSettings extends ClientSettings {
   private static final String META_VERSION_KEY = "artifact.version";
 
   private static String gapicVersion;
+
+  private static final io.grpc.MethodDescriptor<ListLogMetricsRequest, ListLogMetricsResponse>
+      METHOD_LIST_LOG_METRICS =
+          io.grpc.MethodDescriptor.create(
+              io.grpc.MethodDescriptor.MethodType.UNARY,
+              "google.logging.v2.MetricsServiceV2/ListLogMetrics",
+              io.grpc.protobuf.ProtoUtils.marshaller(ListLogMetricsRequest.getDefaultInstance()),
+              io.grpc.protobuf.ProtoUtils.marshaller(ListLogMetricsResponse.getDefaultInstance()));
+  private static final io.grpc.MethodDescriptor<GetLogMetricRequest, LogMetric>
+      METHOD_GET_LOG_METRIC =
+          io.grpc.MethodDescriptor.create(
+              io.grpc.MethodDescriptor.MethodType.UNARY,
+              "google.logging.v2.MetricsServiceV2/GetLogMetric",
+              io.grpc.protobuf.ProtoUtils.marshaller(GetLogMetricRequest.getDefaultInstance()),
+              io.grpc.protobuf.ProtoUtils.marshaller(LogMetric.getDefaultInstance()));
+  private static final io.grpc.MethodDescriptor<CreateLogMetricRequest, LogMetric>
+      METHOD_CREATE_LOG_METRIC =
+          io.grpc.MethodDescriptor.create(
+              io.grpc.MethodDescriptor.MethodType.UNARY,
+              "google.logging.v2.MetricsServiceV2/CreateLogMetric",
+              io.grpc.protobuf.ProtoUtils.marshaller(CreateLogMetricRequest.getDefaultInstance()),
+              io.grpc.protobuf.ProtoUtils.marshaller(LogMetric.getDefaultInstance()));
+  private static final io.grpc.MethodDescriptor<UpdateLogMetricRequest, LogMetric>
+      METHOD_UPDATE_LOG_METRIC =
+          io.grpc.MethodDescriptor.create(
+              io.grpc.MethodDescriptor.MethodType.UNARY,
+              "google.logging.v2.MetricsServiceV2/UpdateLogMetric",
+              io.grpc.protobuf.ProtoUtils.marshaller(UpdateLogMetricRequest.getDefaultInstance()),
+              io.grpc.protobuf.ProtoUtils.marshaller(LogMetric.getDefaultInstance()));
+  private static final io.grpc.MethodDescriptor<DeleteLogMetricRequest, Empty>
+      METHOD_DELETE_LOG_METRIC =
+          io.grpc.MethodDescriptor.create(
+              io.grpc.MethodDescriptor.MethodType.UNARY,
+              "google.logging.v2.MetricsServiceV2/DeleteLogMetric",
+              io.grpc.protobuf.ProtoUtils.marshaller(DeleteLogMetricRequest.getDefaultInstance()),
+              io.grpc.protobuf.ProtoUtils.marshaller(Empty.getDefaultInstance()));
 
   private final PagedCallSettings<
           ListLogMetricsRequest, ListLogMetricsResponse, ListLogMetricsPagedResponse>
@@ -147,7 +183,7 @@ public class MetricsSettings extends ClientSettings {
   }
 
   /** Returns the default service scopes. */
-  public static ImmutableList<String> getDefaultServiceScopes() {
+  public static List<String> getDefaultServiceScopes() {
     return DEFAULT_SERVICE_SCOPES;
   }
 
@@ -286,13 +322,13 @@ public class MetricsSettings extends ClientSettings {
       RetrySettings.Builder settingsBuilder = null;
       settingsBuilder =
           RetrySettings.newBuilder()
-              .setInitialRetryDelay(Duration.millis(100L))
+              .setInitialRetryDelay(Duration.ofMillis(100L))
               .setRetryDelayMultiplier(1.2)
-              .setMaxRetryDelay(Duration.millis(1000L))
-              .setInitialRpcTimeout(Duration.millis(2000L))
+              .setMaxRetryDelay(Duration.ofMillis(1000L))
+              .setInitialRpcTimeout(Duration.ofMillis(2000L))
               .setRpcTimeoutMultiplier(1.5)
-              .setMaxRpcTimeout(Duration.millis(30000L))
-              .setTotalTimeout(Duration.millis(45000L));
+              .setMaxRpcTimeout(Duration.ofMillis(30000L))
+              .setTotalTimeout(Duration.ofMillis(45000L));
       definitions.put("default", settingsBuilder);
       RETRY_PARAM_DEFINITIONS = definitions.build();
     }
@@ -301,20 +337,15 @@ public class MetricsSettings extends ClientSettings {
       super(defaultChannelProviderBuilder().build());
 
       listLogMetricsSettings =
-          PagedCallSettings.newBuilder(
-              MetricsServiceV2Grpc.METHOD_LIST_LOG_METRICS, LIST_LOG_METRICS_PAGE_STR_FACT);
+          PagedCallSettings.newBuilder(METHOD_LIST_LOG_METRICS, LIST_LOG_METRICS_PAGE_STR_FACT);
 
-      getLogMetricSettings =
-          SimpleCallSettings.newBuilder(MetricsServiceV2Grpc.METHOD_GET_LOG_METRIC);
+      getLogMetricSettings = SimpleCallSettings.newBuilder(METHOD_GET_LOG_METRIC);
 
-      createLogMetricSettings =
-          SimpleCallSettings.newBuilder(MetricsServiceV2Grpc.METHOD_CREATE_LOG_METRIC);
+      createLogMetricSettings = SimpleCallSettings.newBuilder(METHOD_CREATE_LOG_METRIC);
 
-      updateLogMetricSettings =
-          SimpleCallSettings.newBuilder(MetricsServiceV2Grpc.METHOD_UPDATE_LOG_METRIC);
+      updateLogMetricSettings = SimpleCallSettings.newBuilder(METHOD_UPDATE_LOG_METRIC);
 
-      deleteLogMetricSettings =
-          SimpleCallSettings.newBuilder(MetricsServiceV2Grpc.METHOD_DELETE_LOG_METRIC);
+      deleteLogMetricSettings = SimpleCallSettings.newBuilder(METHOD_DELETE_LOG_METRIC);
 
       unaryMethodSettingsBuilders =
           ImmutableList.<UnaryCallSettings.Builder>of(
