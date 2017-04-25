@@ -103,6 +103,12 @@ public class ITStorageTest {
       new SecretKeySpec(BaseEncoding.base64().decode(BASE64_KEY), "AES256");
   private static final byte[] COMPRESSED_CONTENT = BaseEncoding.base64()
       .decode("H4sIAAAAAAAAAPNIzcnJV3DPz0/PSVVwzskvTVEILskvSkxPVQQA/LySchsAAAA=");
+  private static final String BLOB_NAME_FORM_C = "Caf\u00e9";
+  private static final String BLOB_NAME_FORM_D = "Cafe\u0301";
+  private static final String BLOB_CONTENT_FORM_C = "BLOB_CONTENT_FORM_C";
+  private static final String BLOB_CONTENT_FORM_D = "BLOB_CONTENT_FORM_D";
+  private static final Map<String, String> BLOB_NORMALIZATION =
+      ImmutableMap.of(BLOB_NAME_FORM_C, BLOB_CONTENT_FORM_C, BLOB_NAME_FORM_D, BLOB_CONTENT_FORM_D);
 
   @BeforeClass
   public static void beforeClass() throws NoSuchAlgorithmException, InvalidKeySpecException {
@@ -1450,16 +1456,16 @@ public class ITStorageTest {
     Identity projectEditor = Identity.projectEditor(projectId);
     Identity projectViewer = Identity.projectViewer(projectId);
     Map<com.google.cloud.Role, Set<Identity>> bindingsWithoutPublicRead =
-        ImmutableMap.of(
-            StorageRoles.legacyBucketOwner(),
-            (Set<Identity>) newHashSet(projectOwner, projectEditor),
-            StorageRoles.legacyBucketReader(), newHashSet(projectViewer));
+            ImmutableMap.of(
+                    StorageRoles.legacyBucketOwner(),
+                    (Set<Identity>) newHashSet(projectOwner, projectEditor),
+                    StorageRoles.legacyBucketReader(), newHashSet(projectViewer));
     Map<com.google.cloud.Role, Set<Identity>> bindingsWithPublicRead =
-        ImmutableMap.of(
-            StorageRoles.legacyBucketOwner(),
-            (Set<Identity>) newHashSet(projectOwner, projectEditor),
-            StorageRoles.legacyBucketReader(), newHashSet(projectViewer),
-            StorageRoles.legacyObjectReader(), newHashSet(Identity.allUsers()));
+            ImmutableMap.of(
+                    StorageRoles.legacyBucketOwner(),
+                    (Set<Identity>) newHashSet(projectOwner, projectEditor),
+                    StorageRoles.legacyBucketReader(), newHashSet(projectViewer),
+                    StorageRoles.legacyObjectReader(), newHashSet(Identity.allUsers()));
 
     // Validate getting policy.
     Policy currentPolicy = storage.getIamPolicy(BUCKET);
@@ -1467,26 +1473,41 @@ public class ITStorageTest {
 
     // Validate updating policy.
     Policy updatedPolicy =
-        storage.setIamPolicy(
-            BUCKET,
-            currentPolicy.toBuilder()
-                .addIdentity(StorageRoles.legacyObjectReader(), Identity.allUsers())
-                .build());
+            storage.setIamPolicy(
+                    BUCKET,
+                    currentPolicy.toBuilder()
+                            .addIdentity(StorageRoles.legacyObjectReader(), Identity.allUsers())
+                            .build());
     assertEquals(bindingsWithPublicRead, updatedPolicy.getBindings());
     Policy revertedPolicy =
-        storage.setIamPolicy(
-            BUCKET,
-            updatedPolicy.toBuilder()
-                .removeIdentity(StorageRoles.legacyObjectReader(), Identity.allUsers())
-                .build());
+            storage.setIamPolicy(
+                    BUCKET,
+                    updatedPolicy.toBuilder()
+                            .removeIdentity(StorageRoles.legacyObjectReader(), Identity.allUsers())
+                            .build());
     assertEquals(bindingsWithoutPublicRead, revertedPolicy.getBindings());
 
     // Validate testing permissions.
     List<Boolean> expectedPermissions = ImmutableList.of(true, true);
     assertEquals(
-        expectedPermissions,
-        storage.testIamPermissions(
-            BUCKET,
-            ImmutableList.of("storage.buckets.getIamPolicy", "storage.buckets.setIamPolicy")));
+            expectedPermissions,
+            storage.testIamPermissions(
+                    BUCKET,
+                    ImmutableList.of("storage.buckets.getIamPolicy", "storage.buckets.setIamPolicy")));
+  }
+
+  @Test
+  public void testBlobNameNormalization() {
+    for (String blobName : BLOB_NORMALIZATION.keySet()) {
+      BlobInfo blobInfo = BlobInfo.newBuilder(BlobId.of(BUCKET, blobName))
+          .setContentType("text/plain")
+          .setContentEncoding("UTF-8")
+          .build();
+      Blob blob = storage.create(blobInfo, BLOB_NORMALIZATION.get(blobName).getBytes());
+      assertEquals(blobName, blob.getName());
+
+      String content = new String(storage.get(BlobId.of(BUCKET, blobName)).getContent());
+      assertEquals(BLOB_NORMALIZATION.get(blobName), content);
+    }
   }
 }
